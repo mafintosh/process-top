@@ -1,0 +1,24 @@
+{
+  "name": "process-top",
+  "version": "0.0.0",
+  "description": "A \"top\" like module for your Node.js process. Collects CPU usage etc.",
+  "main": "index.js",
+  "dependencies": {
+    "event-loop-delay": "^1.0.0",
+    "prettier-bytes": "^1.0.4"
+  },
+  "devDependencies": {},
+  "bin": {
+    "process-top": "./bin.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mafintosh/process-top.git"
+  },
+  "author": "Mathias Buus (@mafintosh)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mafintosh/process-top/issues"
+  },
+  "homepage": "https://github.com/mafintosh/process-top"
+}
