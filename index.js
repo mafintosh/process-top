@@ -64,6 +64,15 @@ function top (opts) {
     toString () {
       const mem = this.memory()
       return `cpu: ${pct(this.cpu().percent)} | rss: ${p(mem.rss)} (${pct(mem.percent)}) | heap: ${p(mem.heapUsed)} / ${p(mem.heapTotal)} (${pct(mem.heapPercent)}) | ext: ${p(mem.external)} | delay: ${this.delay()} ms | ${time(this.time())} | loadavg: ${os.loadavg().map(fixed2).join(', ')}`
+    },
+    toJSON () {
+      const memory = this.memory()
+      return {
+        cpu: Number(this.cpu().percent.toFixed(4)),
+        memory: { ...memory, percent: Number(memory.percent.toFixed(4)), heapPercent: Number(memory.heapPercent.toFixed(4)) },
+        delay: this.delay(),
+        time: this.time()
+      }
     }
   }
 
