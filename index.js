@@ -21,13 +21,13 @@ function top (opts) {
     pid: process.pid,
     command: process.argv.join(' '),
     started,
-    time () {
+    runtime () {
       return Date.now() - started
     },
     delay () {
       const btm = oldest()
       const timeDelta = process.hrtime(win[btm].time)
-      const ms = timeDelta[0] * 1e3 + Math.floor(timeDelta[1] / 1e6)
+      const ms = Math.max(1, timeDelta[0] * 1e3 + Math.floor(timeDelta[1] / 1e6))
       return Math.floor((loopSampler.delay - win[btm].delay) / (ms / tick))
     },
     cpu () {
@@ -63,15 +63,16 @@ function top (opts) {
     },
     toString () {
       const mem = this.memory()
-      return `cpu: ${pct(this.cpu().percent)} | rss: ${p(mem.rss)} (${pct(mem.percent)}) | heap: ${p(mem.heapUsed)} / ${p(mem.heapTotal)} (${pct(mem.heapPercent)}) | ext: ${p(mem.external)} | delay: ${this.delay()} ms | ${time(this.time())} | loadavg: ${os.loadavg().map(fixed2).join(', ')}`
+      return `cpu: ${pct(this.cpu().percent)} | rss: ${p(mem.rss)} (${pct(mem.percent)}) | heap: ${p(mem.heapUsed)} / ${p(mem.heapTotal)} (${pct(mem.heapPercent)}) | ext: ${p(mem.external)} | delay: ${this.delay()} ms | ${time(this.runtime())} | loadavg: ${os.loadavg().map(fixed2).join(', ')}`
     },
     toJSON () {
       const memory = this.memory()
       return {
+        timestamp: new Date(),
         cpu: Number(this.cpu().percent.toFixed(4)),
         memory: { ...memory, percent: Number(memory.percent.toFixed(4)), heapPercent: Number(memory.heapPercent.toFixed(4)) },
         delay: this.delay(),
-        time: this.time()
+        runtime: this.runtime()
       }
     }
   }
