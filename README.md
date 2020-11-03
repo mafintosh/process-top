@@ -65,6 +65,10 @@ Returns a human friendly string representation of the top object.
 
 Destroy the top object.
 
+#### `top.toJSON()`
+
+Return the stats as JSON.
+
 ## CLI
 
 There is also a CLI tool available.
