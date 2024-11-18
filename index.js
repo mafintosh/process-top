@@ -1,6 +1,13 @@
 const os = require('os')
 const p = require('prettier-bytes')
 const eld = require('event-loop-delay')
+const hrtime = require('./hrtime')
+
+const isBare = !!global.Bare
+const resourceUsage = isBare ? os.resourceUsage : global.process.resourceUsage
+const memoryUsage = isBare ? os.memoryUsage : global.process.memoryUsage
+const pid = isBare ? global.Bare.pid : global.process.pid
+const argv = isBare ? global.Bare.argv : global.process.argv
 
 module.exports = top
 
@@ -10,7 +17,8 @@ function top (opts) {
   const tick = opts.interval || 1000
   const started = Date.now()
   const interval = setInterval(perSecond, tick)
-  const win = [{ time: process.hrtime(), cpu: process.cpuUsage(), delay: 0 }, null, null, null]
+
+  const win = [{ time: hrtime(), cpu: cpuUsage(null), delay: 0 }, null, null, null]
   const loopSampler = eld()
 
   let sec = 1
@@ -18,22 +26,22 @@ function top (opts) {
   interval.unref()
 
   return {
-    pid: process.pid,
-    command: process.argv.join(' '),
+    pid,
+    command: argv.join(' '),
     started,
     runtime () {
       return Date.now() - started
     },
     delay () {
       const btm = oldest()
-      const timeDelta = process.hrtime(win[btm].time)
+      const timeDelta = hrtime(win[btm].time)
       const ms = Math.max(1, timeDelta[0] * 1e3 + Math.floor(timeDelta[1] / 1e6))
       return Math.floor((loopSampler.delay - win[btm].delay) / (ms / tick))
     },
     cpu () {
       const btm = oldest()
-      const cpuDelta = process.cpuUsage(win[btm].cpu)
-      const timeDelta = process.hrtime(win[btm].time)
+      const cpuDelta = cpuUsage(win[btm].cpu)
+      const timeDelta = hrtime(win[btm].time)
       const us = timeDelta[0] * 1e6 + timeDelta[1] / 1e3
       return {
         time: us,
@@ -43,11 +51,12 @@ function top (opts) {
       }
     },
     memory () {
-      const mem = process.memoryUsage()
+      const mem = memoryUsage()
       const total = os.totalmem()
+
       return {
-        percent: mem.rss / total,
-        rss: mem.rss,
+        percent: (mem.rss || 0) / total,
+        rss: mem.rss || 0,
         total,
         heapPercent: mem.heapUsed / mem.heapTotal,
         heapUsed: mem.heapUsed,
@@ -85,7 +94,7 @@ function top (opts) {
 
   function perSecond () {
     const ptr = sec++ & 3
-    win[ptr] = { time: process.hrtime(), cpu: process.cpuUsage(), delay: loopSampler.delay }
+    win[ptr] = { time: hrtime(), cpu: cpuUsage(null), delay: loopSampler.delay }
   }
 }
 
@@ -99,13 +108,29 @@ function fixed2 (n) {
 
 function time (n) {
   let secs = Math.floor(n / 1000)
-  let hours = Math.floor(secs / 3600)
+  const hours = Math.floor(secs / 3600)
   secs -= hours * 3600
-  let mins = Math.floor(secs / 60)
+  const mins = Math.floor(secs / 60)
   secs -= mins * 60
   return pad(hours) + ':' + pad(mins) + ':' + pad(secs)
 }
 
 function pad (n) {
   return n < 10 ? '0' + n : '' + n
+}
+
+function cpuUsage (previous) {
+  const current = resourceUsage()
+
+  const result = {
+    user: current.userCPUTime,
+    system: current.systemCPUTime
+  }
+
+  if (!previous) return result
+
+  return {
+    user: result.user - previous.user,
+    system: result.system - previous.system
+  }
 }
