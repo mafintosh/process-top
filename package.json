@@ -4,15 +4,19 @@
   "description": "A \"top\" like module for your Node.js process. Collects CPU usage etc.",
   "main": "index.js",
   "imports": {
+    "./hrtime": {
+      "bare": "bare-hrtime",
+      "default": "./hrtime.js"
+    },
     "os": {
       "bare": "bare-os",
       "default": "os"
     }
   },
   "dependencies": {
-    "bare-hrtime": "^2.0.9",
+    "bare-hrtime": "^2.0.10",
     "bare-os": "^3.1.0",
-    "event-loop-delay": "github:davidmarkclements/event-loop-delay#bare",
+    "event-loop-delay": "^1.1.0",
     "prettier-bytes": "^1.0.4"
   },
   "bin": {

@@ -1,26 +1,13 @@
 const os = require('os')
 const p = require('prettier-bytes')
 const eld = require('event-loop-delay')
+const hrtime = require('./hrtime')
+
 const isBare = !!global.Bare
-const hrtime = isBare ? require('bare-hrtime') : global.process.hrtime
 const resourceUsage = isBare ? os.resourceUsage : global.process.resourceUsage
+const memoryUsage = isBare ? os.memoryUsage : global.process.memoryUsage
 const pid = isBare ? global.Bare.pid : global.process.pid
 const argv = isBare ? global.Bare.argv : global.process.argv
-function cpuUsage (previous = null) {
-  const current = resourceUsage()
-
-  const result = {
-    user: Math.round(current.userCPUTime * 1000),
-    system: Math.round(current.systemCPUTime * 1000)
-  }
-
-  if (!previous) return result
-
-  return {
-    user: result.user - previous.user,
-    system: result.system - previous.system
-  }
-}
 
 module.exports = top
 
@@ -31,7 +18,7 @@ function top (opts) {
   const started = Date.now()
   const interval = setInterval(perSecond, tick)
 
-  const win = [{ time: hrtime(), cpu: cpuUsage(), delay: 0 }, null, null, null]
+  const win = [{ time: hrtime(), cpu: cpuUsage(null), delay: 0 }, null, null, null]
   const loopSampler = eld()
 
   let sec = 1
@@ -64,11 +51,12 @@ function top (opts) {
       }
     },
     memory () {
-      const mem = os.memoryUsage()
+      const mem = memoryUsage()
       const total = os.totalmem()
+
       return {
-        percent: mem.rss / total,
-        rss: mem.rss,
+        percent: (mem.rss || 0) / total,
+        rss: mem.rss || 0,
         total,
         heapPercent: mem.heapUsed / mem.heapTotal,
         heapUsed: mem.heapUsed,
@@ -106,7 +94,7 @@ function top (opts) {
 
   function perSecond () {
     const ptr = sec++ & 3
-    win[ptr] = { time: hrtime(), cpu: cpuUsage(), delay: loopSampler.delay }
+    win[ptr] = { time: hrtime(), cpu: cpuUsage(null), delay: loopSampler.delay }
   }
 }
 
@@ -129,4 +117,20 @@ function time (n) {
 
 function pad (n) {
   return n < 10 ? '0' + n : '' + n
+}
+
+function cpuUsage (previous) {
+  const current = resourceUsage()
+
+  const result = {
+    user: current.userCPUTime,
+    system: current.systemCPUTime
+  }
+
+  if (!previous) return result
+
+  return {
+    user: result.user - previous.user,
+    system: result.system - previous.system
+  }
 }
