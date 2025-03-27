@@ -30,6 +30,7 @@ function top (opts) {
     pid,
     command: argv.join(' '),
     started,
+    cpus: os.cpus().length,
     runtime () {
       return Date.now() - started
     },
