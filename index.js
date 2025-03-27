@@ -5,6 +5,7 @@ const hrtime = require('./hrtime')
 
 const isBare = !!global.Bare
 const resourceUsage = isBare ? os.resourceUsage : global.process.resourceUsage
+const threadCpuUsage = (isBare ? os.threadCpuUsage : global.process.threadCpuUsage) || (() => ({ user: 0, system: 0 }))
 const memoryUsage = isBare ? os.memoryUsage : global.process.memoryUsage
 const pid = isBare ? global.Bare.pid : global.process.pid
 const argv = isBare ? global.Bare.argv : global.process.argv
@@ -18,7 +19,7 @@ function top (opts) {
   const started = Date.now()
   const interval = setInterval(perSecond, tick)
 
-  const win = [{ time: hrtime(), cpu: cpuUsage(null), delay: 0 }, null, null, null]
+  const win = [{ time: hrtime(), cpu: cpuUsage(null), cpuThread: threadCpuUsage(null), delay: 0 }, null, null, null]
   const loopSampler = eld()
 
   let sec = 1
@@ -41,6 +42,18 @@ function top (opts) {
     cpu () {
       const btm = oldest()
       const cpuDelta = cpuUsage(win[btm].cpu)
+      const timeDelta = hrtime(win[btm].time)
+      const us = timeDelta[0] * 1e6 + timeDelta[1] / 1e3
+      return {
+        time: us,
+        percent: (cpuDelta.system + cpuDelta.user) / us,
+        system: cpuDelta.system,
+        user: cpuDelta.user
+      }
+    },
+    cpuThread () {
+      const btm = oldest()
+      const cpuDelta = threadCpuUsage(win[btm].cpuThread)
       const timeDelta = hrtime(win[btm].time)
       const us = timeDelta[0] * 1e6 + timeDelta[1] / 1e3
       return {
@@ -94,7 +107,7 @@ function top (opts) {
 
   function perSecond () {
     const ptr = sec++ & 3
-    win[ptr] = { time: hrtime(), cpu: cpuUsage(null), delay: loopSampler.delay }
+    win[ptr] = { time: hrtime(), cpu: cpuUsage(null), cpuThread: threadCpuUsage(null), delay: loopSampler.delay }
   }
 }
 
