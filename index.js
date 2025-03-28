@@ -23,6 +23,13 @@ function top (opts) {
   const loopSampler = eld()
 
   let sec = 1
+  let cpus = 0
+
+  try {
+    cpus = os.cpus().length
+  } catch {
+    // might crash on android for permission...
+  }
 
   interval.unref()
 
@@ -30,7 +37,7 @@ function top (opts) {
     pid,
     command: argv.join(' '),
     started,
-    cpus: os.cpus().length,
+    cpus,
     runtime () {
       return Date.now() - started
     },
