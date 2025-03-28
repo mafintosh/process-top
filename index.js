@@ -26,7 +26,7 @@ function top (opts) {
   let cpus = 0
 
   try {
-    cpus = os.cpus().length
+    cpus = os.availableParallelism()
   } catch {
     // might crash on android for permission...
   }
