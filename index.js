@@ -57,7 +57,7 @@ function top (opts) {
         percent: (cpuDelta.system + cpuDelta.user) / us,
         system: cpuDelta.system,
         user: cpuDelta.user,
-        count: os.cpus().length
+        count: cpus
       }
     },
     cpuThread () {
