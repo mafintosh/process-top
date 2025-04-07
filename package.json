@@ -1,6 +1,6 @@
 {
   "name": "process-top",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "description": "A \"top\" like module for your Node.js process. Collects CPU usage etc.",
   "main": "index.js",
   "imports": {
