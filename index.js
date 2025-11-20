@@ -101,6 +101,8 @@ function top (opts) {
       return {
         timestamp: new Date(),
         cpu: Number(this.cpu().percent.toFixed(4)),
+        cpuThread: Number(this.cpuThread().percent.toFixed(4)),
+        cpus,
         memory: { ...memory, percent: Number(memory.percent.toFixed(4)), heapPercent: Number(memory.heapPercent.toFixed(4)) },
         delay: this.delay(),
         runtime: this.runtime()
