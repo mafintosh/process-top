@@ -31,7 +31,7 @@ function top (opts) {
     // might crash on android for permission...
   }
 
-  interval.unref()
+  if (interval.unref) interval.unref()
 
   return {
     pid,
