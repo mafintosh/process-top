@@ -1,5 +1,5 @@
 const os = require('os')
-const p = require('prettier-bytes')
+const p = require('tiny-byte-size')
 const eld = require('event-loop-delay')
 const hrtime = require('./hrtime')
 

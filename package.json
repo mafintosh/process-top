@@ -17,7 +17,7 @@
     "bare-hrtime": "^2.0.10",
     "bare-os": "^3.1.0",
     "event-loop-delay": "^1.1.0",
-    "prettier-bytes": "^1.0.4"
+    "tiny-byte-size": "^1.1.0"
   },
   "bin": {
     "process-top": "./bin.js"
